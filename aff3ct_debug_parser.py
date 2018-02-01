@@ -1,11 +1,12 @@
 #!/usr/bin/python3
 
 import argparse
+import struct
+import os
 
 
 class OutputStructure:
     index = 0
-    n_frames = 0
     frame_length = 0
     data_format = ""
     name = ""
@@ -14,7 +15,7 @@ class OutputStructure:
     def __init__(self):
         self.frames = []
 
-    def get_frames(self, lines, key, inter_frame):
+    def import_frames(self, lines, key, inter_frame):
         # list line numbers with specified keys
         key_lns = []
         for i in range(0, len(lines)):
@@ -48,6 +49,36 @@ class OutputStructure:
                     fout.write(value)
                 fout.write("\n")
 
+    def export_as_bin(self, path):
+        # format_list = {"int8, int16, int32, int64, float32, float64"}
+
+        if self.data_format == "int8":
+            pack_format = '>b'
+        elif self.data_format == "int16":
+            pack_format = '>h'
+        elif self.data_format == "int32":
+            pack_format = '>i'
+        elif self.data_format == "int64":
+            pack_format = '>q'
+        elif self.data_format == "float32":
+            pack_format = '>f'
+        elif self.data_format == "float64":
+            pack_format = '>d'
+        else:
+            "Unknown format"
+            return
+
+        with open(path, "wb") as fout:
+            fout.write(struct.pack('>I', len(self.frames)))
+            fout.write(struct.pack('>I', self.frame_length))
+
+            for frame in self.frames:
+                for value in frame:
+                    if "float" in self.data_format:
+                        fout.write(struct.pack(pack_format, float(value)))
+                    else:
+                        fout.write(struct.pack(pack_format, int(value)))
+
 
 def adp_parse_args():
     parser = argparse.ArgumentParser()
@@ -77,6 +108,7 @@ def get_output_structures(lines, key):
     if not tsk_ios:
         print(key + " not found")
         exit(1)
+    inter_frame = 1
     out_structures = []
     for i in range(0, len(tsk_ios)):
         out_structures.append(OutputStructure())
@@ -93,15 +125,13 @@ def get_output_structures(lines, key):
             out_structures[i].frame_length = int(tsk_arg[1])
         else:
             inter_frame = 1
-            out_structures[i].frame_length = tsk_arg[1]
+            out_structures[i].frame_length = int(tsk_arg[1])
     return out_structures, inter_frame
 
 
 # TODO deal with path with path library
 
 def main():
-    format_list = {"int8, int16, int32, int64, float32, float64"}
-
     args = adp_parse_args()
 
     # open files and store contents
@@ -116,11 +146,18 @@ def main():
 
     # get frames
     for out_sct in out_structures:
-        out_sct.get_frames(lines, key, inter_frame)
+        out_sct.import_frames(lines, key, inter_frame)
 
-    # export frames
+    # export frames as text
+
     for out_sct in out_structures:
-        out_sct.export_as_text(args.output + out_sct.name + ".txt")
+        base_path = os.path.join(args.output, out_sct.name)
+        out_sct.export_as_text(base_path + ".txt")
+
+    # export frames as bin
+    for out_sct in out_structures:
+        base_path = os.path.join(args.output, out_sct.name)
+        out_sct.export_as_bin(base_path + ".bin")
 
     print("# End of program.")
 
