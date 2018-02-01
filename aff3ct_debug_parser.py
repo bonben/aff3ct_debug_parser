@@ -49,9 +49,45 @@ class OutputStructure:
                     fout.write(value)
                 fout.write("\n")
 
-    def export_as_bin(self, path):
-        # format_list = {"int8, int16, int32, int64, float32, float64"}
+    def export_as_source(self, path, frame_index):
+        if frame_index > len(self.frames) - 1:
+            print("Specified frame index superior to the number of frames. Frame 0 is exported instead.")
+            frame_index = 0
 
+        if self.data_format == "int8":
+            c_type = "signed char"
+        elif self.data_format == "int16":
+            c_type = "signed short"
+        elif self.data_format == "int32":
+            c_type = "signed int"
+        elif self.data_format == "int64":
+            c_type = "signed long"
+        elif self.data_format == "float32":
+            c_type = "float"
+        elif self.data_format == "float64":
+            c_type = "double"
+        else:
+            "Unknown format"
+            return
+
+        with open(path, "w") as fout:
+            fout.write("#ifndef " + self.name.upper() + "_H\n")
+            fout.write("#define " + self.name.upper() + "_H\n")
+            fout.write("\n")
+            fout.write(c_type + " " + self.name + "[" + str(self.frame_length) + "] = {\n\t")
+            for i, value in enumerate(self.frames[frame_index]):
+                if i:
+                    fout.write(",")
+                    if i % 8 == 0:
+                        fout.write("\n\t")
+                    else:
+                        fout.write(" ")
+                fout.write('{:>4}'.format(value))
+            fout.write("\n")
+            fout.write("};\n\n")
+            fout.write("#endif //" + self.name.upper() + "_H")
+
+    def export_as_bin(self, path):
         if self.data_format == "int8":
             float_code = 0
             sizeof_value = 8
@@ -101,6 +137,7 @@ def adp_parse_args():
     parser.add_argument("--mod", type=str, required=True, help="module to be extracted, ex : Source_random_fast")
     parser.add_argument("--tsk", type=str, required=True, help="task to be extracted, ex : generate")
     parser.add_argument("-o", "--output", type=str, help="path to the output folder", default="./")
+    parser.add_argument("--src", type=int, help="export specified as .h source file")
 
     args = parser.parse_args()
     return args
@@ -172,6 +209,12 @@ def main():
     for out_sct in out_structures:
         base_path = os.path.join(args.output, out_sct.name)
         out_sct.export_as_bin(base_path + ".bin")
+
+    # export frames as source
+    if args.src:
+        for out_sct in out_structures:
+            base_path = os.path.join(args.output, out_sct.name)
+            out_sct.export_as_source(base_path + ".h", args.src)
 
     print("# End of program.")
 
