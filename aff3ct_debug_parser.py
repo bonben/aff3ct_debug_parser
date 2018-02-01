@@ -53,16 +53,28 @@ class OutputStructure:
         # format_list = {"int8, int16, int32, int64, float32, float64"}
 
         if self.data_format == "int8":
+            float_code = 0
+            sizeof_value = 8
             pack_format = '>b'
         elif self.data_format == "int16":
+            float_code = 0
+            sizeof_value = 16
             pack_format = '>h'
         elif self.data_format == "int32":
+            float_code = 0
+            sizeof_value = 32
             pack_format = '>i'
         elif self.data_format == "int64":
+            float_code = 0
+            sizeof_value = 64
             pack_format = '>q'
         elif self.data_format == "float32":
+            float_code = 1
+            sizeof_value = 32
             pack_format = '>f'
         elif self.data_format == "float64":
+            float_code = 1
+            sizeof_value = 64
             pack_format = '>d'
         else:
             "Unknown format"
@@ -70,11 +82,13 @@ class OutputStructure:
 
         with open(path, "wb") as fout:
             fout.write(struct.pack('>I', len(self.frames)))
+            fout.write(struct.pack('>I', float_code))
+            fout.write(struct.pack('>I', sizeof_value))
             fout.write(struct.pack('>I', self.frame_length))
 
             for frame in self.frames:
                 for value in frame:
-                    if "float" in self.data_format:
+                    if float_code == 1:
                         fout.write(struct.pack(pack_format, float(value)))
                     else:
                         fout.write(struct.pack(pack_format, int(value)))
