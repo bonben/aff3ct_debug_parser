@@ -1,17 +1,21 @@
 # AFF3CT Debug Parser
 This tool is used to parse the debug outputs of the [AFF3CT Software](https://aff3ct.github.io) and convert it into binary and text files.
 ## Usage
-	usage: aff3ct_debug_parser.py [-h] --mod MOD --tsk TSK [-o OUTPUT] path
+```bash
+usage: aff3ct_debug_parser.py [-h] --mod MOD --tsk TSK [-o OUTPUT] [--src SRC]
+                              path
 
-	positional arguments:
-	  path                  path to the file to be parsed
+positional arguments:
+  path                  path to the file to be parsed
 
-	optional arguments:
-	  -h, --help            show this help message and exit
-	  --mod MOD             module to be extracted, ex : Source_random_fast
-	  --tsk TSK             task to be extracted, ex : generate
-	  -o OUTPUT, --output OUTPUT
+optional arguments:
+  -h, --help            show this help message and exit
+  --mod MOD             module to be extracted, ex : Source_random_fast
+  --tsk TSK             task to be extracted, ex : generate
+  -o OUTPUT, --output OUTPUT
                         path to the output folder
+  --src SRC             export specified frame as .h source file
+```
 ## Test and example
 In the project root directory, run : 
 

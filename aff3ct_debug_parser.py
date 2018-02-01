@@ -137,7 +137,7 @@ def adp_parse_args():
     parser.add_argument("--mod", type=str, required=True, help="module to be extracted, ex : Source_random_fast")
     parser.add_argument("--tsk", type=str, required=True, help="task to be extracted, ex : generate")
     parser.add_argument("-o", "--output", type=str, help="path to the output folder", default="./")
-    parser.add_argument("--src", type=int, help="export specified as .h source file")
+    parser.add_argument("--src", type=int, help="export specified frame as .h source file")
 
     args = parser.parse_args()
     return args
