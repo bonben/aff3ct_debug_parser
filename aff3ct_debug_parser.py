@@ -180,8 +180,6 @@ def get_output_structures(lines, key):
     return out_structures, inter_frame
 
 
-# TODO deal with path with path library
-
 def main():
     args = adp_parse_args()
 
@@ -215,8 +213,6 @@ def main():
         for out_sct in out_structures:
             base_path = os.path.join(args.output, out_sct.name)
             out_sct.export_as_source(base_path + ".h", args.src)
-
-    print("# End of program.")
 
 
 if __name__ == "__main__":
